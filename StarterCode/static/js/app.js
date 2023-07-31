@@ -1,115 +1,114 @@
-// Read samples.json using D3
-const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json";
 
-// Function that contains instructions at page load/refresh
-function init() {
-  // create dropdown/select
-  const dropdownMenu = d3.select("#selDataset");
+function init(){
+    // code that runs once (only on page load or refresh)
 
-  // get JSON data
-  d3.json(url).then(function (data) {
-    const sampleNames = data.names;
+    // this checks that our initial function runs.
+    console.log("The Init() function ran")
 
-    // enter sample names into dropdown menu
-    sampleNames.forEach(function (name) {
-      dropdownMenu
-        .append("option")
-        .text(name)
-        .property("value", name);
+    // create dropdown/select
+    const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json"
+    d3.json(url).then(data =>{
+
+        // console.log(data.names)
+        let dropdownNames = data.names;
+        let dropdown = d3.select('#selDataset');
+
+        for (i=0; i<dropdownNames.length; i++){
+            // <option value="volvo">Volvo</option>
+            dropdown.append("option").text(dropdownNames[i]).property('value',dropdownNames[i])
+        }
+        
     });
+    // run functions to generate plots with default id = 940
+    createScatter('940')
+    createBar('940')
+    createSummary('940')
 
-    // display the charts and metadata for the first sample
-    const firstSample = sampleNames[0];
-    buildCharts(firstSample);
-    buildMetadata(firstSample);
-  });
 }
 
-// Function to build the charts and update them when a new sample is selected
-function buildCharts(sample) {
-  // get JSON data
-  d3.json(url).then(function (data) {
-    const samples = data.samples;
-    const selectedSample = samples.find(function (s) {
-      return s.id === sample;
-    });
+// function that runs whenever the dropdown is changed
+// this function is in the HTML and is called with an input called 'this.value'
+// that comes from the select element (dropdown)
+function optionChanged(newID){
+    // code that updates graphics
+    // one way is to recall each function
+    createScatter(newID)
+    createBar(newID)
+    createSummary(newID)
 
-    // Build the bar chart
-    const barData = [
-      {
-        x: selectedSample.sample_values.slice(0, 10).reverse(),
-        y: selectedSample.otu_ids
-          .slice(0, 10)
-          .map((id) => `OTU ${id}`)
-          .reverse(),
-        text: selectedSample.otu_labels.slice(0, 10).reverse(),
-        type: "bar",
-        orientation: "h",
-      },
-    ];
-
-    const barLayout = {
-      title: "Top 10 OTUs",
-      margin: { t: 30, l: 150 },
-    };
-
-    Plotly.newPlot("bar", barData, barLayout);
-
-    // Build the bubble chart
-    const bubbleData = [
-      {
-        x: selectedSample.otu_ids,
-        y: selectedSample.sample_values,
-        text: selectedSample.otu_labels,
-        mode: "markers",
-        marker: {
-          size: selectedSample.sample_values,
-          color: selectedSample.otu_ids,
-          colorscale: "Earth",
-        },
-      },
-    ];
-
-    const bubbleLayout = {
-      title: "OTU IDs vs Sample Values",
-      xaxis: { title: "OTU ID" },
-      yaxis: { title: "Sample Value" },
-      showlegend: false,
-      height: 500,
-      width: 1000,
-    };
-
-    Plotly.newPlot("bubble", bubbleData, bubbleLayout);
-  });
 }
 
-// Function to display the sample metadata
-function buildMetadata(sample) {
-  // Fetch the JSON data
-  d3.json(url).then(function (data) {
-    const metadata = data.metadata;
-    const selectedMetadata = metadata.find(function (m) {
-      return m.id === parseInt(sample);
-    });
+function createScatter(id){
+    // code that makes scatter plot at id='bubble'
 
-    // Select the metadata panel
-    const metadataPanel = d3.select("#sample-metadata");
-
-    // Clear previous metadata
-    metadataPanel.html("");
-
-    // Append each key-value pair to the panel
-    Object.entries(selectedMetadata).forEach(function ([key, value]) {
-      metadataPanel.append("p").text(`${key}: ${value}`);
-    });
-  });
+    // checking to see if function is running
+    console.log(`This function generates scatter plot of ${id} `)
 }
 
-// Function to handle changes in the dropdown selection
-function optionChanged(newSample) {
-  buildCharts(newSample);
-  buildMetadata(newSample);
+function createBar(id){
+    // code that makes bar chart at id='bar'
+    const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json"
+    d3.json(url).then(data =>{
+        // console.log(data)
+        let idData = data.samples.filter(i => i.id == id)
+        console.log(idData[0])
+        // console.log(idData[0].sample_values.slice(0,10).reverse())
+        let otuIds = idData[0].otu_ids.slice(0,10)
+        let otuLabels = idData[0].otu_labels.slice(0,10)
+        let sampleValues = idData[0].sample_values.slice(0,10)
+
+        let otuIds_text = otuIds.map(i => `OTU ${i}`)
+
+        console.log()
+        let chartData = [
+            {
+                y: otuIds_text.reverse(),
+                x: sampleValues.reverse(),
+                text: otuLabels.reverse(),
+                type: 'bar',
+                orientation: 'h'
+            }
+        ];
+
+        let layout = {
+            title: "my bellybutton bacteria"
+        };
+        
+        Plotly.newPlot("bar", chartData, layout);
+
+    });
+
+
+
+    // checking to see if function is running
+    console.log(`This function generates bar chart of ${id} `)
+
 }
 
-// Call the initialize function
-init();
+function createSummary(id){
+    // code that makes list, paragraph, text/linebreaks at id='sample-meta'
+    const url = "https://2u-data-curriculum-team.s3.amazonaws.com/dataviz-classroom/v1.1/14-Interactive-Web-Visualizations/02-Homework/samples.json"
+    d3.json(url).then(data =>{
+        let idData = data.metadata.filter(i => i.id == id)
+        console.log(idData[0])
+        let demographics = d3.select('#sample-metadata');
+
+        demographics.html("")
+        demographics.append("p").text(`ID: ${idData[0].id}`)
+        demographics.append("p").text(`AGE: ${idData[0].age}`)
+        
+
+    })
+    // checking to see if function is running
+    console.log(`This function generates summary info of ${id} `)
+}
+
+
+// function called, runs init instructions
+// runs only on load and refresh of browser page
+init()
+
+
+
+
+
